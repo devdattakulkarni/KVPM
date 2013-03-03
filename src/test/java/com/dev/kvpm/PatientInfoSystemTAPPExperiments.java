@@ -28,15 +28,36 @@ public class PatientInfoSystemTAPPExperiments {
 	}
 	
 	@Test
-	public void testGetWithProvenance() throws Exception {
+	public void testGetWithProvenanceTurnedOn() throws Exception {
 		String columnFamily = "Patient";
 		String rowKey = "JodhaAkbar";
 		String columnKey = "medication";
 		long timestamp = 22;
 		int dataSize = 1;
 		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(true);
+			long start = System.currentTimeMillis();
 			String value = (String)accessor.get(keyspace, columnFamily, rowKey, columnKey, timestamp);
-			log.info("Got value:" + value);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Got value:" + value + " Time take:" + totalTime);
+		}
+	}
+	
+	@Test
+	public void testGetWithProvenanceTurnedOff() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "JodhaAkbar";
+		String columnKey = "medication";
+		long timestamp = 22;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(false);
+			long start = System.currentTimeMillis();
+			String value = (String)accessor.get(keyspace, columnFamily, rowKey, columnKey, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Got value:" + value + " Time take:" + totalTime);
 		}
 	}
 

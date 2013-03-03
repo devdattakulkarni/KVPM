@@ -7,6 +7,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
+import com.dev.kvpm.CassandraUtil;
 
 public class CassandraAccessor {
 
@@ -15,8 +16,9 @@ public class CassandraAccessor {
 	private Map<Node, Node> resourcePolicyMap;
 	private String user;
 	private CassandraUtil cassandraUtil;
-	private ProvenanceDao provenanceDao;
+	private ProvenanceDaoImpl provenanceDao;
 	private Configuration config;
+	private boolean collectProvenance;
 
 	public CassandraAccessor(String configFilePath, String user,
 			String password, String keyspace, String server, int port)
@@ -35,6 +37,10 @@ public class CassandraAccessor {
 	public CassandraUtil getCassandraUtil() {
 		return cassandraUtil;
 	}
+	
+	public void setProvenanceFlag(boolean flag) {
+		this.collectProvenance = flag;
+	}
 
 	public synchronized Object get(String keyspace, String columnFamily,
 			String rowKey, String columnKey, long timestamp) throws Exception {
@@ -45,7 +51,9 @@ public class CassandraAccessor {
 		byte[] val = (byte[]) cassandraUtil
 				.get(columnFamily, rowKey, columnKey);
 
-		collectReadProvenanceInformation(resource, user);
+		if (collectProvenance) {
+			collectReadProvenanceInformation(resource, user);
+		}
 
 		return new String(val);
 	}
@@ -53,8 +61,10 @@ public class CassandraAccessor {
 	private void collectReadProvenanceInformation(String resource, String user) {
 		try {
 			logger.info("About to save provenance information.");
+			long start = System.currentTimeMillis();
 			provenanceDao.insert(resource, user, "read");
-			logger.info("Done saving provenance information.");
+			long end = System.currentTimeMillis();
+			logger.info("Done saving provenance information. Time taken:" + (end - start));
 		} catch (Exception exp) {
 			logger.error(
 					"Exception while storing read provenance information.",

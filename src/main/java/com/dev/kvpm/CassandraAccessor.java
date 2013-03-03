@@ -41,6 +41,34 @@ public class CassandraAccessor {
 	public void setProvenanceFlag(boolean flag) {
 		this.collectProvenance = flag;
 	}
+	
+	public synchronized Object get_kvpm_prov_in_Cassandra(String keyspace, String columnFamily,
+			String rowKey, String columnKey, long timestamp) throws Exception {
+
+		String resource = "/" + keyspace + "/" + columnFamily + "/(id=" + rowKey + ")/" + columnKey;
+		logger.info("Accessing " + resource);
+
+		byte[] val = (byte[]) cassandraUtil
+				.get(columnFamily, rowKey, columnKey);
+
+		if (collectProvenance) {
+			collectProvenanceInformationInCassandra(keyspace, resource, user, "read", null);
+		}
+
+		return new String(val);
+	}
+	
+	private void collectProvenanceInformationInCassandra(String keyspace, String resource, String user,
+			String operation, String data) {
+		try {
+		String columnFamily = "Provenance";
+		String columnKey = String.valueOf(System.currentTimeMillis());
+		String value = "accessor:" + user + " operation:" + operation + " data:" + data;
+		this.direct_put(keyspace, columnFamily, resource, columnKey, value, System.currentTimeMillis());
+		} catch (Exception exp) {
+			logger.error("Error while storing provenance information in the Provenance column family. " + exp.toString());
+		}		
+	}
 
 	public synchronized Object get(String keyspace, String columnFamily,
 			String rowKey, String columnKey, long timestamp) throws Exception {
@@ -96,6 +124,35 @@ public class CassandraAccessor {
 		Map<String, String> vmap = cassandraUtil.get_super_col(columnFamily,
 				rowKey, columnKey);
 		return vmap;
+	}
+	
+	public synchronized void direct_put(String keyspace, String columnFamily,
+			String rowKey, String columnKey, Object value, long timestamp)
+			throws Exception {
+
+		cassandraUtil.add(keyspace, columnFamily, rowKey, columnKey, value,
+				timestamp);
+	}
+	
+	public synchronized void put_kvpm_prov_in_Cassandra(String keyspace, String columnFamily,
+			String rowKey, String columnKey, Object value, long timestamp)
+			throws Exception {
+
+		String resource = "/" + keyspace + "/" + columnFamily + "/(id=" + rowKey + ")/" + columnKey;
+		logger.info("Accessing " + resource);
+
+		String currentValue = null;
+		if (collectProvenance) {
+			currentValue = direct_get(keyspace, columnFamily, rowKey,
+					columnKey, timestamp);
+		}
+
+		cassandraUtil.add(keyspace, columnFamily, rowKey, columnKey, value,
+				timestamp);
+
+		if (collectProvenance) {
+			this.collectProvenanceInformationInCassandra(keyspace, resource, user, "write", currentValue);
+		}
 	}
 
 	public synchronized void put(String keyspace, String columnFamily,

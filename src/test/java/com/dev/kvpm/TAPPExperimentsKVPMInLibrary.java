@@ -28,6 +28,40 @@ public class TAPPExperimentsKVPMInLibrary {
 	}
 	
 	@Test
+	public void tgetpOffDataInCassandra() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "VVS";
+		String columnKey = "medication";
+		long timestamp = 0;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(false);
+			long start = System.currentTimeMillis();
+			String value = (String)accessor.get_kvpm_prov_in_Cassandra(keyspace, columnFamily, rowKey, columnKey, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Got value:" + value + " Time take:" + totalTime);
+		}
+	}
+	
+	@Test
+	public void tgetpONDataInCassandra() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "VVS";
+		String columnKey = "medication";
+		long timestamp = 0;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(true);
+			long start = System.currentTimeMillis();
+			String value = (String)accessor.get_kvpm_prov_in_Cassandra(keyspace, columnFamily, rowKey, columnKey, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Got value:" + value + " Time take:" + totalTime);
+		}
+	}
+	
+	@Test
 	public void testGetWithProvenanceTurnedOff() throws Exception {
 		String columnFamily = "Patient";
 		String rowKey = "VVS";
@@ -43,6 +77,8 @@ public class TAPPExperimentsKVPMInLibrary {
 			log.info("Got value:" + value + " Time take:" + totalTime);
 		}
 	}
+	
+	
 	
 	@Test
 	public void testGetWithProvenanceTurnedOn() throws Exception {
@@ -91,6 +127,42 @@ public class TAPPExperimentsKVPMInLibrary {
 			accessor.setProvenanceFlag(false);
 			long start = System.currentTimeMillis();
 			accessor.put(keyspace, columnFamily, rowKey, columnKey, value, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Time take:" + totalTime);
+		}
+	}
+	
+	@Test
+	public void tputpOffDataInCassandra() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "VVS";
+		String columnKey = "medication";
+		String value = "Ibuprofane";
+		long timestamp = 0;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(false);
+			long start = System.currentTimeMillis();
+			accessor.put_kvpm_prov_in_Cassandra(keyspace, columnFamily, rowKey, columnKey, value, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Time take:" + totalTime);
+		}
+	}
+	
+	@Test
+	public void tputpOnDataInCassandra() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "VVS";
+		String columnKey = "medication";
+		String value = "Ibuprofane";
+		long timestamp = 0;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(true);
+			long start = System.currentTimeMillis();
+			accessor.put_kvpm_prov_in_Cassandra(keyspace, columnFamily, rowKey, columnKey, value, timestamp);
 			long end = System.currentTimeMillis();
 			long totalTime = end - start;
 			log.info("Time take:" + totalTime);

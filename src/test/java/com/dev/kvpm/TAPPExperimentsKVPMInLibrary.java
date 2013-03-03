@@ -8,11 +8,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PatientInfoSystemTAPPExperiments {
+public class TAPPExperimentsKVPMInLibrary {
 
 	private CassandraAccessor accessor;
 	private final Logger log = LoggerFactory
-			.getLogger(PatientInfoSystemTAPPExperiments.class);
+			.getLogger(TAPPExperimentsKVPMInLibrary.class);
 	String user = "devdatta";
 	String password = "devdatta";
 	String keyspace = "PatientInfoSystem";

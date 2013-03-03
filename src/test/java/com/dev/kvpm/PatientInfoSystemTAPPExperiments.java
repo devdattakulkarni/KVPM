@@ -28,11 +28,28 @@ public class PatientInfoSystemTAPPExperiments {
 	}
 	
 	@Test
+	public void testGetWithProvenanceTurnedOff() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "VVS";
+		String columnKey = "medication";
+		long timestamp = 0;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(false);
+			long start = System.currentTimeMillis();
+			String value = (String)accessor.get(keyspace, columnFamily, rowKey, columnKey, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Got value:" + value + " Time take:" + totalTime);
+		}
+	}
+	
+	@Test
 	public void testGetWithProvenanceTurnedOn() throws Exception {
 		String columnFamily = "Patient";
-		String rowKey = "JodhaAkbar";
+		String rowKey = "VVS";
 		String columnKey = "medication";
-		long timestamp = 22;
+		long timestamp = 0;
 		int dataSize = 1;
 		for (int i = 0; i < dataSize; i++) {
 			accessor.setProvenanceFlag(true);
@@ -43,21 +60,40 @@ public class PatientInfoSystemTAPPExperiments {
 			log.info("Got value:" + value + " Time take:" + totalTime);
 		}
 	}
+		
+	@Test
+	public void testPutWithProvenanceTurnedOn() throws Exception {
+		String columnFamily = "Patient";
+		String rowKey = "VVS";
+		String columnKey = "medication";
+		String value = "Ibuprofane";
+		long timestamp = 0;
+		int dataSize = 1;
+		for (int i = 0; i < dataSize; i++) {
+			accessor.setProvenanceFlag(true);
+			long start = System.currentTimeMillis();
+			accessor.put(keyspace, columnFamily, rowKey, columnKey, value, timestamp);
+			long end = System.currentTimeMillis();
+			long totalTime = end - start;
+			log.info("Time take:" + totalTime);
+		}
+	}
 	
 	@Test
-	public void testGetWithProvenanceTurnedOff() throws Exception {
+	public void testPutWithProvenanceTurnedOff() throws Exception {
 		String columnFamily = "Patient";
-		String rowKey = "JodhaAkbar";
+		String rowKey = "VVS";
 		String columnKey = "medication";
-		long timestamp = 22;
+		String value = "Ibuprofane";
+		long timestamp = 0;
 		int dataSize = 1;
 		for (int i = 0; i < dataSize; i++) {
 			accessor.setProvenanceFlag(false);
 			long start = System.currentTimeMillis();
-			String value = (String)accessor.get(keyspace, columnFamily, rowKey, columnKey, timestamp);
+			accessor.put(keyspace, columnFamily, rowKey, columnKey, value, timestamp);
 			long end = System.currentTimeMillis();
 			long totalTime = end - start;
-			log.info("Got value:" + value + " Time take:" + totalTime);
+			log.info("Time take:" + totalTime);
 		}
 	}
 

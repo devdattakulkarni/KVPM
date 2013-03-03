@@ -26,7 +26,8 @@ public class ProvenanceDaoImplTest {
 		String resourceKey = "testRowKey";
 		String accessor = "testAccessor";
 		String operation = "read";
-		provenanceDao.insert(resourceKey, accessor, operation);
+		String data = null;
+		provenanceDao.insert(resourceKey, accessor, operation, data);
 		log.info("Done saving provenance information.");
 	}
 }

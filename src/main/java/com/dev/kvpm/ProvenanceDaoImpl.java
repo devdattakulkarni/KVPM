@@ -21,12 +21,12 @@ public class ProvenanceDaoImpl implements ProvenanceDao {
         this.config = config;
     }
 
-	public void insert(String resourceKey, String accessor, String operation) throws Exception {
+	public void insert(String resourceKey, String accessor, String operation, String data) throws Exception {
 		log.info("Storing provenance data for " + resourceKey + " Data:"
 	            + accessor + " " + operation);
 	        init();
 
-	        String query = "insert into provenance_data (resource, accessor, operation) VALUES (?, ?, ?)";
+	        String query = "insert into provenance_data (resource, accessor, operation, data) VALUES (?, ?, ?, ?)";
 
 	        PreparedStatement pstmt = null;
 	        Connection conn = null;
@@ -36,6 +36,7 @@ public class ProvenanceDaoImpl implements ProvenanceDao {
 	            pstmt.setString(1, resourceKey);
 	            pstmt.setString(2, accessor);
 	            pstmt.setString(3, operation);
+	            pstmt.setString(4, data);
 	            log.debug("Executing SQL query");
 	            pstmt.executeUpdate();
 	            log.debug("Completed SQL query");

@@ -37,7 +37,7 @@ public class CassandraAccessor {
 	public CassandraUtil getCassandraUtil() {
 		return cassandraUtil;
 	}
-	
+
 	public void setProvenanceFlag(boolean flag) {
 		this.collectProvenance = flag;
 	}
@@ -45,26 +45,28 @@ public class CassandraAccessor {
 	public synchronized Object get(String keyspace, String columnFamily,
 			String rowKey, String columnKey, long timestamp) throws Exception {
 
-		String resource = "/" + keyspace + "/" + columnFamily + "/" + columnKey;
+		String resource = "/" + keyspace + "/" + columnFamily + "/(id=" + rowKey + ")/" + columnKey;
 		logger.info("Accessing " + resource);
 
 		byte[] val = (byte[]) cassandraUtil
 				.get(columnFamily, rowKey, columnKey);
 
 		if (collectProvenance) {
-			collectReadProvenanceInformation(resource, user);
+			collectProvenanceInformation(resource, user, "read", null);
 		}
 
 		return new String(val);
 	}
 
-	private void collectReadProvenanceInformation(String resource, String user) {
+	private void collectProvenanceInformation(String resource, String user,
+			String operation, String data) {
 		try {
 			logger.info("About to save provenance information.");
 			long start = System.currentTimeMillis();
-			provenanceDao.insert(resource, user, "read");
+			provenanceDao.insert(resource, user, operation, data);
 			long end = System.currentTimeMillis();
-			logger.info("Done saving provenance information. Time taken:" + (end - start));
+			logger.info("Done saving provenance information. Time taken:"
+					+ (end - start));
 		} catch (Exception exp) {
 			logger.error(
 					"Exception while storing read provenance information.",
@@ -81,7 +83,11 @@ public class CassandraAccessor {
 			String rowKey, String columnKey, long timestamp) throws Exception {
 		byte[] obj = (byte[]) cassandraUtil
 				.get(columnFamily, rowKey, columnKey);
-		return new String(obj);
+		if (obj != null) {
+			return new String(obj);
+		} else {
+			return null;
+		}
 	}
 
 	public Map<String, String> get_versions(String keyspace,
@@ -95,8 +101,22 @@ public class CassandraAccessor {
 	public synchronized void put(String keyspace, String columnFamily,
 			String rowKey, String columnKey, Object value, long timestamp)
 			throws Exception {
+
+		String resource = "/" + keyspace + "/" + columnFamily + "/(id=" + rowKey + ")/" + columnKey;
+		logger.info("Accessing " + resource);
+
+		String currentValue = null;
+		if (collectProvenance) {
+			currentValue = direct_get(keyspace, columnFamily, rowKey,
+					columnKey, timestamp);
+		}
+
 		cassandraUtil.add(keyspace, columnFamily, rowKey, columnKey, value,
 				timestamp);
+
+		if (collectProvenance) {
+			collectProvenanceInformation(resource, user, "write", currentValue);
+		}
 	}
 
 	public synchronized void put_with_super_col(String keyspace,

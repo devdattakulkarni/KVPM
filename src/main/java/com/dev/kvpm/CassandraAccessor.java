@@ -1,7 +1,9 @@
 package com.dev.kvpm;
 
+import java.util.List;
 import java.util.Map;
 
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
@@ -182,6 +184,36 @@ public class CassandraAccessor {
 		cassandraUtil.add_with_super_col(keyspace, columnFamily, rowKey,
 				columnKey, supercolumn, value, timestamp);
 	}
+	
+	/* -- Query operators -- */
+	public void query_all(String columnFamily, String rkey) {
+		 Operator operator = new Operator();
+		 operator.operator = "ALL";
+		 long start = System.currentTimeMillis();
+		 List<ColumnOrSuperColumn> colList = cassandraUtil.prov_query(columnFamily, rkey, operator);
+		 long end = System.currentTimeMillis();
+		 logger.info("Total time:" + (end-start));
+		 for(ColumnOrSuperColumn c : colList) {
+			 byte [] cName = c.getColumn().getName();
+			 byte [] cVal = c.getColumn().getValue();
+			 logger.info(new String(cName) + " " + new String(cVal)); 
+		 }
+	}
+	
+	public void query_last(String columnFamily, String rkey) {
+		 Operator operator = new Operator();
+		 operator.operator = "LAST";
+		 long start = System.currentTimeMillis();
+		 List<ColumnOrSuperColumn> colList = cassandraUtil.prov_query(columnFamily, rkey, operator);
+		 long end = System.currentTimeMillis();
+		 logger.info("Total time:" + (end-start));
+		 for(ColumnOrSuperColumn c : colList) {
+			 byte [] cName = c.getColumn().getName();
+			 byte [] cVal = c.getColumn().getValue();
+			 logger.info(new String(cName) + " " + new String(cVal)); 
+		 }
+	}
+
 
 	public void delete(String columnFamily, String rowKey, String column)
 			throws Exception {

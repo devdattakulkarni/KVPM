@@ -168,6 +168,34 @@ public class TAPPExperimentsKVPMInLibrary {
 			log.info("Time take:" + totalTime);
 		}
 	}
+	
+	@Test
+	public void insertData() throws Exception {
+		String columnFamily = "Provenance";
+		String rowKey = "Kumble";
+		String colKey = "";
+		String value = "Advil";
+		for(long i=0; i<10; i++) {
+			colKey = String.valueOf(i);
+			value = "Advil " + i;
+			accessor.direct_put(keyspace, columnFamily, rowKey, colKey, value, i);
+		}
+	}
+	
+	@Test
+	public void testQueryALL() throws Exception {
+		String columnFamily = "Provenance";
+		String rowKey = "Kumble";		
+		accessor.query_all(columnFamily, rowKey);
+	}
+	
+	@Test
+	public void testQueryLAST() throws Exception {
+		String columnFamily = "Provenance";
+		String rowKey = "Kumble";		
+		accessor.query_last(columnFamily, rowKey);
+	}
+	
 
 	@Test
 	public void insert_multiple_versions_for_a_column() throws Exception {

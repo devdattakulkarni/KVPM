@@ -173,18 +173,55 @@ public class CassandraUtil {
                 clusterName, server, port);
         }
     }
-
     
-    public List<ColumnOrSuperColumn> get_slice(ByteBuffer key,
+    public List<ColumnOrSuperColumn> prov_query(String columnFamily, String rkey, Operator operator) {
+    	List<ColumnOrSuperColumn> columns = null;
+    	
+    	ByteBuffer rowKey = getByteBufferRepresentation(rkey);
+    	SlicePredicate predicate = new SlicePredicate();
+    	SliceRange slice_range = new SliceRange();
+    	ConsistencyLevel consistency_level = ConsistencyLevel.findByValue(1);
+    	ColumnParent column_parent = new ColumnParent();
+    	column_parent.setColumn_family(columnFamily);
+    	
+    	try {
+    	if (operator.operator.equalsIgnoreCase("ALL")) {
+    		slice_range.setStart(getByteBufferRepresentation(""));
+    		slice_range.setFinish(getByteBufferRepresentation(""));
+    		slice_range.setCount(100000);    		
+    		predicate.setSlice_range(slice_range);
+    		columns = get_slice(rowKey, column_parent, predicate, consistency_level);
+    	}
+    	else if (operator.operator.equalsIgnoreCase("LAST")) {
+    		slice_range.setStart(getByteBufferRepresentation(""));
+    		slice_range.setFinish(getByteBufferRepresentation(""));
+    		slice_range.setCount(1);
+    		slice_range.setReversed(true);
+    		predicate.setSlice_range(slice_range);
+    		columns = get_slice(rowKey, column_parent, predicate, consistency_level);
+    	}
+    	else if (operator.operator.equalsIgnoreCase("AT")) {
+    		columns = get_slice(rowKey, column_parent, predicate, consistency_level);
+    		columns = binary_search(columns, operator.operator_data);
+    	}    	
+    	} catch (Exception exp) {
+    		exp.printStackTrace();
+    	}
+    	
+    	return columns;
+    }
+   
+    private List<ColumnOrSuperColumn> get_slice(ByteBuffer key,
 			ColumnParent column_parent, SlicePredicate predicate,
-			ConsistencyLevel consistency_level, ByteBuffer parameterizedVariable) throws Exception {
-    	
-    	List<ColumnOrSuperColumn> colOrSuperCol = null;
-    	
+			ConsistencyLevel consistency_level) throws Exception {    	
+    	List<ColumnOrSuperColumn> colOrSuperCol = null;    	
     	colOrSuperCol = thriftClient.get_slice(key, column_parent, predicate, consistency_level);
-    	
-    	
     	return colOrSuperCol;    	
+    }
+    
+    private List<ColumnOrSuperColumn> binary_search(List<ColumnOrSuperColumn> cols, String searchNum) {
+    	log.info("TODO: Implement binary search on columns");
+    	return cols;
     }
     
     public Map<String,String> get_super_col(String columnFamily, String rowKey, String column)
@@ -248,6 +285,18 @@ public class CassandraUtil {
             e1.printStackTrace();
         }
         return columnName;
+    }
+    
+    private ByteBuffer getByteBufferRepresentation(String key) {
+    	
+    	 ByteBuffer keyOfAccessor = ByteBuffer.allocate(6);
+    	 try {
+         byte[] t1array = key.getBytes("UTF8");
+         keyOfAccessor = ByteBuffer.wrap(t1array);
+    	 } catch (Exception exp) {
+    		 exp.printStackTrace();
+    	 }
+         return keyOfAccessor;
     }
 
     public Object get(String columnFamily, String rowKey, String column)
